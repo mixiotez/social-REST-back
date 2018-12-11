@@ -58,14 +58,15 @@ app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 
 
 // default value for title local
-app.locals.title = 'Express';
+app.locals.title = 'Social REST';
 
 
 
 const index = require('./routes/index');
+const account = require('./routes/account');
 const auth = require('./routes/auth');
 app.use('/', index);
+app.use('/api/account', account);
 app.use('/api/auth', auth);
-
 
 module.exports = app;

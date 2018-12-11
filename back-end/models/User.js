@@ -5,13 +5,13 @@ const passportLocalMongoose = require('passport-local-mongoose');
 const UserSchema = new Schema({
   email: {
     type: String,
-    require: true,
+    required: true,
     unique: true
   },
   role: {
     type: String,
     enum: ['admin', 'user'],
-    require: true,
+    required: true,
     default: 'user'
   },
   profile_pic: {
@@ -20,12 +20,12 @@ const UserSchema = new Schema({
   },
   name: {
     type: String,
-    require: true
+    required: true
   },
   status: {
     type: String,
     enum: ['Pending Confirmation', 'Active'],
-    require: true,
+    required: true,
     default: 'Pending Confirmation'
   }
 }, {
