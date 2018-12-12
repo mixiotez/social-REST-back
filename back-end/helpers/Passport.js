@@ -40,7 +40,7 @@ passport.use(new TwitterStrategy({
       owner: ObjectId(userId)
     };
 
-    SocialNetwork.create({ socialNetwork }, (err, socialNetwork) => {
+    SocialNetwork.create(socialNetwork , (err, socialNetwork) => {
       return cb(err, socialNetwork);
     });
   }

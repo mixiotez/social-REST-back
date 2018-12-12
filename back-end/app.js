@@ -65,8 +65,10 @@ app.locals.title = 'Social REST';
 const index = require('./routes/index');
 const account = require('./routes/account');
 const auth = require('./routes/auth');
+const twitter = require('./routes/twitter');
 app.use('/', index);
 app.use('/api/account', account);
 app.use('/api/auth', auth);
+app.use('/api/twitter', twitter);
 
 module.exports = app;
