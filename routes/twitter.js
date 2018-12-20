@@ -10,18 +10,13 @@ let twitter = new Twit({
 	access_token_secret: String
 });
 
-updateTokens = async SocialNetworkId => {
-	let newToken, newTokenSecret;
-
-	await SocialNetwork.findById(SocialNetworkId)
+updateTokens = SocialNetworkId => {
+	SocialNetwork.findById(SocialNetworkId)
 		.then(socialNetwork => {
-			newToken = socialNetwork.token;
-			newTokenSecret = socialNetwork.tokenSecret;
+			twitter.config.access_token = socialNetwork.token;
+			twitter.config.access_token_secret = socialNetwork.tokenSecret;
 		});
-
-	twitter.config.access_token = newToken;
-	twitter.config.access_token_secret = newTokenSecret;
-}
+};
 
 // New tweet
 router.post('/:socialNetworkId/new', async (req, res) => {
