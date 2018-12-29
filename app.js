@@ -9,11 +9,10 @@ const mongoose     = require('mongoose');
 const logger       = require('morgan');
 const path         = require('path');
 const passport     = require('./helpers/passport');
-const session      = require('express-session');
-
+const cors         = require('cors');
 
 mongoose
-  .connect('mongodb://localhost/back-end', {useNewUrlParser: true})
+  .connect('mongodb://localhost/social-rest', { useNewUrlParser: true })
   .then(x => {
     console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`)
   })
@@ -26,13 +25,6 @@ const debug = require('debug')(`${app_name}:${path.basename(__filename).split('.
 
 const app = express();
 
-// Session Setup
-app.use(session({
-  secret: process.env.SECRET,
-  resave: true,
-  saveUninitialized: true
-}));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -41,6 +33,11 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Browsers will block communication between apps for security reasons. Cors helps to avoid this
+app.use(cors({
+  credentials: true
+}));
 
 // Express View engine setup
 app.use(require('node-sass-middleware')({
@@ -58,7 +55,7 @@ app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 
 
 // default value for title local
-app.locals.title = 'Social REST';
+app.locals.title = 'Social-REST';
 
 
 
@@ -66,9 +63,14 @@ const index = require('./routes/index');
 const account = require('./routes/account');
 const auth = require('./routes/auth');
 const twitter = require('./routes/twitter');
+
 app.use('/', index);
 app.use('/api/account', account);
 app.use('/api/auth', auth);
 app.use('/api/twitter', twitter);
+
+// app.all('*', (req, res) => {
+//   res.sendFile(`${__dirname}/public/index.html`);
+// })
 
 module.exports = app;

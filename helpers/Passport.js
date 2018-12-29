@@ -2,15 +2,10 @@ const passport = require("passport");
 const TwitterStrategy = require('passport-twitter').Strategy;
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const User = require("../models/User");
+const auth = require("../helpers/auth");
 const SocialNetwork = require("../models/SocialNetwork");
 
-passport.use(User.createStrategy());
-
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser()); 
-
-// Twitter credentials
+// Fetches Twitter credentials
 passport.use(new TwitterStrategy({
   consumerKey: process.env.CONSUMER_KEY,
   consumerSecret: process.env.CONSUMER_KEY_SECRET,
@@ -18,8 +13,12 @@ passport.use(new TwitterStrategy({
   includeEmail: true,
   passReqToCallback: true
 },
+  auth.verifyToken,
   async (req, token, tokenSecret, profile, cb) => {
-    const userId = req.user._id;
+
+    console.log(req.user)
+
+    const userId = req.user.id;
 
     const existingSocialNetwork = await SocialNetwork.findOne({ $and: [{ type: "Twitter" }, { name: profile.username }] });
 

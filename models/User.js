@@ -1,12 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const passportLocalMongoose = require('passport-local-mongoose');
 
 const UserSchema = new Schema({
   email: {
     type: String,
     required: true,
     unique: true
+  },
+  password: {
+    type: String,
+    required: true
   },
   role: {
     type: String,
@@ -34,7 +37,5 @@ const UserSchema = new Schema({
       updatedAt: 'updated_at'
     }
   });
-
-UserSchema.plugin(passportLocalMongoose, { usernameField: 'email' }); // Username Field specifies that we're going to use 'email' as the 'username' for logging in
 
 module.exports = mongoose.model('User', UserSchema);

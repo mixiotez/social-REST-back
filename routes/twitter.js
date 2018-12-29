@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const SocialNetwork = require("../models/SocialNetwork");
+const auth = require("../helpers/auth");
 const Twit = require('twit');
 
 let twitter = new Twit({
@@ -19,7 +20,7 @@ updateTokens = SocialNetworkId => {
 };
 
 // New tweet
-router.post('/:socialNetworkId/new', async (req, res) => {
+router.post('/:socialNetworkId/new', auth.verifyToken, async (req, res) => {
 	const { tweetContent } = req.body;
 
 	if (!tweetContent)
@@ -35,7 +36,7 @@ router.post('/:socialNetworkId/new', async (req, res) => {
 		);
 });
 
-router.delete('/:socialNetworkId/:postId', async (req, res) => {
+router.delete('/:socialNetworkId/:postId', auth.verifyToken, async (req, res) => {
 	await updateTokens(req.params.socialNetworkId);
 
 	twitter

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const bcrypt = require('bcrypt');
 const sendGridEmail = require('@sendgrid/mail');
 
 sendGridEmail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -20,7 +21,10 @@ router.post('/register', async (req, res) => {
 	if (user)
 		return res.status(409).json({ message: 'This email has been already taken' });
 
-	User.register({ email, name }, password)
+	const salt = bcrypt.genSaltSync(256),
+	hashedPassword = bcrypt.hashSync(password, salt);
+
+	User.create({ email, name, password: hashedPassword})
 		.then(user => {
 			const encodedCode = encodeURIComponent(user._id);
 
@@ -70,7 +74,7 @@ router.patch('/:id', async (req, res) => {
 	const user = await User.findOne({ email: email });
 
 	if (user)
-		return res.status(409).json({ message: 'This email has been already taken' });
+		return res.status(400).json({ message: 'This email has been already taken' });
 
 	if (!email || !name)
 		return res.status(400).json({ message: 'Email/Name fields cannot be blank' });
