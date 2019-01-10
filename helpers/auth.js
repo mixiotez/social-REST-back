@@ -5,10 +5,10 @@ exports.verifyToken = (req, res, next) => {
 	const token = req.headers['x-access-token'];
 
 	if (!token)
-		return res.status(403).json({ msg: 'Please login' });
+		return res.status(403).json({ message: 'Please login' });
 
 	jwt.verify(token, process.env.SECRET, async (err, decoded) => {
-		if (err) return res.status(403).json({ err, msg: 'Expired token. Please login again' });
+		if (err) return res.status(403).json({ err, message: 'Expired token. Please login' });
 
 		req.user = await User.findById(decoded.id);
 

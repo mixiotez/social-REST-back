@@ -9,16 +9,13 @@ const SocialNetwork = require("../models/SocialNetwork");
 passport.use(new TwitterStrategy({
   consumerKey: process.env.CONSUMER_KEY,
   consumerSecret: process.env.CONSUMER_KEY_SECRET,
-  callbackURL: "http://localhost:3000/api/auth/twitter/callback",
+  callbackURL: "http://localhost:5000/api/auth/twitter/callback",
   includeEmail: true,
   passReqToCallback: true
 },
-  auth.verifyToken,
   async (req, token, tokenSecret, profile, cb) => {
 
     console.log(req.user)
-
-    const userId = req.user.id;
 
     const existingSocialNetwork = await SocialNetwork.findOne({ $and: [{ type: "Twitter" }, { name: profile.username }] });
 
@@ -36,7 +33,7 @@ passport.use(new TwitterStrategy({
       name: profile.username,
       token: token,
       tokenSecret: tokenSecret,
-      owner: ObjectId(userId)
+      owner: ObjectId("5c27932ef950ff10492d2308")
     };
 
     SocialNetwork.create(socialNetwork , (err, socialNetwork) => {

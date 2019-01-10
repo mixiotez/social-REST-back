@@ -10,6 +10,7 @@ const logger       = require('morgan');
 const path         = require('path');
 const passport     = require('./helpers/passport');
 const cors         = require('cors');
+const session      = require('express-session');
 
 mongoose
   .connect('mongodb://localhost/social-rest', { useNewUrlParser: true })
@@ -24,6 +25,12 @@ const app_name = require('./package.json').name;
 const debug = require('debug')(`${app_name}:${path.basename(__filename).split('.')[0]}`);
 
 const app = express();
+
+app.use(session({
+  secret: process.env.SECRET,
+  resave: true,
+  saveUninitialized: true
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -62,12 +69,14 @@ app.locals.title = 'Social-REST';
 const index = require('./routes/index');
 const account = require('./routes/account');
 const auth = require('./routes/auth');
+const dashboard = require('./routes/dashboard');
 const twitter = require('./routes/twitter');
 
 app.use('/', index);
 app.use('/api/account', account);
 app.use('/api/auth', auth);
 app.use('/api/twitter', twitter);
+app.use('/api/dashboard', dashboard);
 
 // app.all('*', (req, res) => {
 //   res.sendFile(`${__dirname}/public/index.html`);

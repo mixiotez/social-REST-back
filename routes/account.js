@@ -13,13 +13,13 @@ router.post('/register', async (req, res) => {
 	if (!email || !name || !password || !confirmPassword)
 		return res.status(400).json({ message: 'Missing fields' });
 
-	if (password !== confirmPassword)
-		return res.status(400).json({ message: "Passwords don't match" });
-
 	const user = await User.findOne({ email: email });
 
 	if (user)
 		return res.status(409).json({ message: 'This email has been already taken' });
+
+	if (password !== confirmPassword)
+		return res.status(400).json({ message: "Passwords don't match" });
 
 	const salt = bcrypt.genSaltSync(256),
 	hashedPassword = bcrypt.hashSync(password, salt);
@@ -74,7 +74,7 @@ router.patch('/:id', async (req, res) => {
 	const user = await User.findOne({ email: email });
 
 	if (user)
-		return res.status(400).json({ message: 'This email has been already taken' });
+		return res.status(400).json({ message: 'This email has already been taken' });
 
 	if (!email || !name)
 		return res.status(400).json({ message: 'Email/Name fields cannot be blank' });
