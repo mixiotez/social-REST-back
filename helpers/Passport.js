@@ -2,7 +2,6 @@ const passport = require("passport");
 const TwitterStrategy = require('passport-twitter').Strategy;
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const auth = require("../helpers/auth");
 const SocialNetwork = require("../models/SocialNetwork");
 
 // Fetches Twitter credentials
