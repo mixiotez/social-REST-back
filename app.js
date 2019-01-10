@@ -13,7 +13,7 @@ const cors         = require('cors');
 const session      = require('express-session');
 
 mongoose
-  .connect('mongodb://localhost/social-rest', { useNewUrlParser: true })
+  .connect(process.env.DB, { useNewUrlParser: true })
   .then(x => {
     console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`)
   })
@@ -78,8 +78,8 @@ app.use('/api/auth', auth);
 app.use('/api/twitter', twitter);
 app.use('/api/dashboard', dashboard);
 
-// app.all('*', (req, res) => {
-//   res.sendFile(`${__dirname}/public/index.html`);
-// })
+app.all('*', (req, res) => {
+  res.sendFile(`${__dirname}/public/index.html`);
+})
 
 module.exports = app;

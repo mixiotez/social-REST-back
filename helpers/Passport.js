@@ -9,7 +9,7 @@ const SocialNetwork = require("../models/SocialNetwork");
 passport.use(new TwitterStrategy({
   consumerKey: process.env.CONSUMER_KEY,
   consumerSecret: process.env.CONSUMER_KEY_SECRET,
-  callbackURL: "http://localhost:5000/api/auth/twitter/callback",
+  callbackURL: "https://social-rest.herokuapp.com/api/auth/twitter/callback",
   includeEmail: true,
   passReqToCallback: true
 },
