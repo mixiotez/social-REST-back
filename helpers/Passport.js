@@ -14,8 +14,6 @@ passport.use(new TwitterStrategy({
 },
   async (req, token, tokenSecret, profile, cb) => {
 
-    console.log(req.user)
-
     const existingSocialNetwork = await SocialNetwork.findOne({ $and: [{ type: "Twitter" }, { name: profile.username }] });
 
     // If the social network already exists, it updates the credentials
@@ -32,7 +30,7 @@ passport.use(new TwitterStrategy({
       name: profile.username,
       token: token,
       tokenSecret: tokenSecret,
-      owner: ObjectId("5c27932ef950ff10492d2308")
+      owner: ObjectId("5c36dac9639c533523d708e4")
     };
 
     SocialNetwork.create(socialNetwork , (err, socialNetwork) => {
