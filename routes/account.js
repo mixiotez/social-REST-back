@@ -13,13 +13,13 @@ router.post('/register', async (req, res) => {
 	if (!email || !name || !password || !confirmPassword)
 		return res.status(400).json({ message: 'Missing fields' });
 
-	const user = await User.findOne({ email: email });
+	const user = await User.findOne({ email });
 
 	if (user)
-		return res.status(409).json({ message: 'This email has been already taken' });
+		return res.status(409).json({ message: 'This email has already been taken' });
 
 	if (password !== confirmPassword)
-		return res.status(400).json({ message: "Passwords don't match" });
+		return res.status(400).json({ message: 'Passwords don\'t match' });
 
 	const salt = bcrypt.genSaltSync(256),
 	hashedPassword = bcrypt.hashSync(password, salt);

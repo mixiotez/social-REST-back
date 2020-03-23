@@ -9,18 +9,15 @@ router.post('/login', async (req, res) => {
 	const { email, password } = req.body;
 
 	const user = await User.findOne({ email: email });
-	if (!user) return res.status(400).json({ message: "There's no account associated with this email" });
-
 	const validPassword = bcrypt.compareSync(password, user.password);
 
-	if (!validPassword) return res.status(500).json({ message: "Invalid password" });
+	if (!user || !validPassword) return res.status(400).json({ message: "Incorrect email or password" });
 
 	const token = jwt.sign({ id: user._id }, process.env.SECRET, { expiresIn: "2 days" });
 
 	delete user._doc.password;
 
 	res.status(200).json({ user, token, message: "Logged in successfully" });
-
 });
 
 // Logout

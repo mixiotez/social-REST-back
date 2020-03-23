@@ -12,8 +12,10 @@ const passport     = require('./helpers/passport');
 const cors         = require('cors');
 const session      = require('express-session');
 
+const database = process.env.ENV == 'DEV' ? 'mongodb://localhost/back-end' : process.env.DB;
+
 mongoose
-  .connect(process.env.DB, { useNewUrlParser: true })
+  .connect(database, { useNewUrlParser: true,  useUnifiedTopology: true })
   .then(x => {
     console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`)
   })
