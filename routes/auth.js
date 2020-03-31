@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const signature = require('oauth-signature');
 const axios = require('axios');
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
+const SocialNetwork = require("../models/SocialNetwork");
 
 router.post('/login', async (req, res) => {
 	const { email, password } = req.body;
@@ -30,7 +33,7 @@ router.post('/logout', (req, res) => {
 // TWITTER
 router.get('/twitter', (req, res) => {
 	const url = 'https://api.twitter.com/oauth/request_token',
-	timestamp = Math.round(new Date().getTime() / 1000),
+	timestamp = Math.round(Date.now() / 1000),
   parameters = {
       oauth_consumer_key : process.env.CONSUMER_KEY,
       oauth_signature_method : 'HMAC-SHA1',
@@ -54,18 +57,45 @@ router.get('/twitter', (req, res) => {
 		url,
 		headers: { 'Authorization': OAuth }
 	})
-	.then(response => {
-		res.status(200);
-		res.redirect(`https://api.twitter.com/oauth/authorize?${response.data}`);
-	})
+	.then(response => res.redirect(`https://api.twitter.com/oauth/authorize?${response.data.split('&')[0]}`))
 	.catch(err => res.status(500).json({err, message: 'Couldn\'t generate Twitter credentials'}));
 });
 
-// router.get('/twitter/callback',
-// 	passport.authenticate('twitter', {
-// 		session: false,
-// 		failureRedirect: '/'
-// 	})
-// );
+router.get('/twitter/callback', (req, res) => {
+	const { oauth_token, oauth_verifier } = req.query;
+	const OAuth = `OAuth oauth_consumer_key="${process.env.CONSUMER_KEY}",oauth_token="${oauth_token}",oauth_verifier="${oauth_verifier}"`;
+
+	axios({
+		method: 'POST',
+		url: 'https://api.twitter.com/oauth/access_token',
+		headers: { 'Authorization': OAuth }
+	})
+	.then(async response => {
+		const [,token,, tokenSecret,, id,, username] = response.data.split(/=|&/);
+
+		const existingSocialNetwork = await SocialNetwork.findOne({ $and: [{ type: "Twitter" }, { id: id }] });
+
+    // If the social network already exists, it updates the credentials
+    if (existingSocialNetwork)
+      return SocialNetwork.findByIdAndUpdate(existingSocialNetwork._id,
+				{ $set: { token: token, tokenSecret: tokenSecret }})
+				.then(() => res.redirect('/dashboard'))
+				.catch(err => res.status(500).json({err, message: 'Couldn\'t update credentials'}))
+
+    const socialNetwork = {
+      type: 'Twitter',
+      name: username,
+      token: token,
+			tokenSecret: tokenSecret,
+			id: id,
+      owner: ObjectId("5e77e3ff3cada909516ea927")
+    };
+
+		SocialNetwork.create(socialNetwork)
+		.then(() => res.redirect('/dashboard'))
+		.catch(err => res.status(500).json({err, message: 'Couldn\'t save Twitter credentials'}));
+	})
+	.catch(err => res.status(500).json({err, message: 'Couldn\'t authenticate credentials with Twitter'}));
+});
 
 module.exports = router;
