@@ -24,12 +24,6 @@ router.post('/login', async (req, res) => {
 	res.status(200).json({ user, token, message: "Logged in successfully" });
 });
 
-// Logout
-router.post('/logout', (req, res) => {
-	req.logout();
-	res.status(200).json({ message: 'Log out success!' });
-});
-
 // TWITTER
 router.get('/twitter', (req, res) => {
 	const url = 'https://api.twitter.com/oauth/request_token',
@@ -40,7 +34,7 @@ router.get('/twitter', (req, res) => {
       oauth_timestamp : timestamp,
       oauth_nonce : timestamp + 'socialRESTNonce',
 			oauth_version : '1.0',
-			oauth_callback: process.env.ENV === 'DEV' ? 'http://localhost:5000/api/auth/twitter/callback' : 'https://social-rest.herokuapp.com/api/auth/twitter/callback'
+			oauth_callback: process.env.ENV === 'DEV' ? 'http://localhost:5000/api/auth/twitter/callback?id=' + req.query.id : 'https://social-rest.herokuapp.com/api/auth/twitter/callback?'
 	},
 	oauth_signature = signature.generate('POST', url, parameters, process.env.CONSUMER_KEY_SECRET);
 
@@ -62,7 +56,7 @@ router.get('/twitter', (req, res) => {
 });
 
 router.get('/twitter/callback', (req, res) => {
-	const { oauth_token, oauth_verifier } = req.query;
+	const { id, oauth_token, oauth_verifier } = req.query;
 	const OAuth = `OAuth oauth_consumer_key="${process.env.CONSUMER_KEY}",oauth_token="${oauth_token}",oauth_verifier="${oauth_verifier}"`;
 
 	axios({
@@ -71,28 +65,30 @@ router.get('/twitter/callback', (req, res) => {
 		headers: { 'Authorization': OAuth }
 	})
 	.then(async response => {
-		const [,token,, tokenSecret,, id,, username] = response.data.split(/=|&/);
+		const [,token,, tokenSecret,, socialNetworkId,, name] = response.data.split(/=|&/);
 
-		const existingSocialNetwork = await SocialNetwork.findOne({ $and: [{ type: "Twitter" }, { id: id }] });
+		const existingSocialNetwork = await SocialNetwork.findOne(
+			{ $and: [{ type: "Twitter" }, { socialNetworkId }, {owner: ObjectId(id)} ] }
+		);
 
     // If the social network already exists, it updates the credentials
     if (existingSocialNetwork)
       return SocialNetwork.findByIdAndUpdate(existingSocialNetwork._id,
 				{ $set: { token: token, tokenSecret: tokenSecret }})
-				.then(() => res.redirect('/dashboard'))
+				.then(() => res.render('self-closing-window'))
 				.catch(err => res.status(500).json({err, message: 'Couldn\'t update credentials'}))
 
     const socialNetwork = {
       type: 'Twitter',
-      name: username,
-      token: token,
-			tokenSecret: tokenSecret,
-			id: id,
-      owner: ObjectId("5e77e3ff3cada909516ea927")
+      name,
+      token,
+			tokenSecret,
+			socialNetworkId,
+      owner: ObjectId(id)
     };
 
 		SocialNetwork.create(socialNetwork)
-		.then(() => res.redirect('/dashboard'))
+		.then(() => res.render('self-closing-window'))
 		.catch(err => res.status(500).json({err, message: 'Couldn\'t save Twitter credentials'}));
 	})
 	.catch(err => res.status(500).json({err, message: 'Couldn\'t authenticate credentials with Twitter'}));

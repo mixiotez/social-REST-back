@@ -7,10 +7,10 @@ const SocialNetworkSchema = new Schema({
 		required: true,
 		enum: ['Twitter']
 	},
-	name: {
-		type: String,
-		required: true
-	},
+	name: String,
+	username: String,
+	socialNetworkId: String,
+	profilePicture: String,
 	token: {
 		type: String,
 		required: true
