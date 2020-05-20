@@ -10,7 +10,7 @@ const logger       = require('morgan');
 const path         = require('path');
 const cors         = require('cors');
 
-const database = process.env.ENV == 'DEV' ? 'mongodb://localhost/back-end' : process.env.DB;
+const database = process.env.DB || 'mongodb://localhost/social-rest';
 
 mongoose
   .connect(database, { useNewUrlParser: true,  useUnifiedTopology: true })
@@ -52,17 +52,13 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 // default value for title local
 app.locals.title = 'Social-REST';
 
-const index = require('./routes/index');
 const account = require('./routes/account');
 const auth = require('./routes/auth');
-const dashboard = require('./routes/dashboard');
 const twitter = require('./routes/twitter');
 
-app.use('/', index);
 app.use('/api/account', account);
 app.use('/api/auth', auth);
 app.use('/api/twitter', twitter);
-app.use('/api/dashboard', dashboard);
 
 app.all('*', (req, res) => {
   res.sendFile(`${__dirname}/public/index.html`);

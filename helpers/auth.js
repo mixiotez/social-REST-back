@@ -8,9 +8,10 @@ exports.verifyToken = (req, res, next) => {
 		return res.status(403).json({ message: 'Please login' });
 
 	jwt.verify(token, process.env.SECRET, async (err, decoded) => {
-		if (err) return res.status(403).json({ err, message: 'Expired token. Please login' });
+		if (err)
+			return res.status(403).json({ err, message: 'Expired/Invalid token. Please login' });
 
-		req.user = await User.findById(decoded.id);
+		req.user = await User.findById(decoded.id, '-password');
 
 		next();
 	});

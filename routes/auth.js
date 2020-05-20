@@ -5,9 +5,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const signature = require('oauth-signature');
 const axios = require('axios');
-const mongoose = require('mongoose');
-const ObjectId = mongoose.Types.ObjectId;
+const ObjectId = require('mongoose').Types.ObjectId; 
 const SocialNetwork = require("../models/SocialNetwork");
+const { verifyToken } = require('../helpers/auth');
 
 router.post('/login', async (req, res) => {
 	const { email, password } = req.body;
@@ -17,11 +17,15 @@ router.post('/login', async (req, res) => {
 
 	if (!user || !validPassword) return res.status(400).json({ message: "Incorrect email or password" });
 
-	const token = jwt.sign({ id: user._id }, process.env.SECRET, { expiresIn: "2 days" });
+	const token = jwt.sign({ id: user._id }, process.env.SECRET);
 
 	delete user._doc.password;
 
 	res.status(200).json({ user, token, message: "Logged in successfully" });
+});
+
+router.post('/verifyToken', verifyToken, (req, res) => {
+	res.status(200).json({ message: "Valid token" });
 });
 
 // TWITTER
@@ -34,7 +38,7 @@ router.get('/twitter', (req, res) => {
       oauth_timestamp : timestamp,
       oauth_nonce : timestamp + 'socialRESTNonce',
 			oauth_version : '1.0',
-			oauth_callback: process.env.ENV === 'DEV' ? 'http://localhost:5000/api/auth/twitter/callback?id=' + req.query.id : 'https://social-rest.herokuapp.com/api/auth/twitter/callback?'
+			oauth_callback: `${process.env.BASE_URL}/auth/twitter/callback?id=${req.query.id}`
 	},
 	oauth_signature = signature.generate('POST', url, parameters, process.env.CONSUMER_KEY_SECRET);
 

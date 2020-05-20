@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const SocialNetwork = require("../models/SocialNetwork");
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const sendGridEmail = require('@sendgrid/mail');
+const ObjectId = require('mongoose').Types.ObjectId; 
+const { verifyToken } = require('../helpers/auth');
 
 sendGridEmail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -65,6 +68,13 @@ router.get('/confirm/:id', (req, res) => {
 		.catch(err =>
 			res.status(500).json({ err, message: "We couldn't confirm the account" })
 		);
+});
+
+// Retrieve user info
+router.get('/details', verifyToken, (req, res) => {
+	SocialNetwork.find({ owner: ObjectId(req.user._id) }, ['-token', '-tokenSecret'])
+	.then(socialNetworks => res.status(200).json({ user: req.user, socialNetworks }))
+	.catch(err => res.status(500).json({err, message: 'Unable to retrieve social networks'}))
 });
 
 // Update user details
